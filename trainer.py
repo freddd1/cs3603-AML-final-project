@@ -1,5 +1,4 @@
 from typing import List
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
@@ -51,7 +50,6 @@ class Trainer:
                 epoch_losses.append(batch_loss)
 
             self.train_losses.append(epoch_losses)
-            print(f'epoch loss {np.mean(epoch_losses):.3f}')
 
     def _train_batch(self, batch: dict) -> float:
         outputs = self.model(**batch)
