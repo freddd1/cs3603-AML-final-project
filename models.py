@@ -7,7 +7,7 @@ from sklearn.decomposition import LatentDirichletAllocation
 
 class tBERT(nn.Module):
     def __init__(self,
-                 all_sentences: List[str],
+                 corpus: List[str],
                  model_name: str = 'bert-base-uncased',
                  num_labels: int = 2,
                  n_topics: int = 40,
@@ -27,17 +27,17 @@ class tBERT(nn.Module):
         self._bert_finetune_last_layers()  # Only train the final layers of bert. Freeze all the others
 
         self.lda = LatentDirichletAllocation(n_components=n_topics)
-        embedded_sentences = self.tokenize(all_sentences)['input_ids']
-        assert len(all_sentences) == embedded_sentences.shape[0], 'error with the embedded_sentences'
-        self.lda.fit(embedded_sentences)
+        embedded_corpus = self.tokenize(corpus)['input_ids']
+        assert len(corpus) == embedded_corpus.shape[0], 'error with the embedded_sentences'
+        self.lda.fit(embedded_corpus)
 
         self.classifier = nn.Sequential(
             nn.Linear(768 + n_topics * 2, 256, bias=True),
-            nn.Dropout(0.2),
+            nn.Dropout(0.1),
             nn.Tanh(),
             nn.Linear(256, 64, bias=True),
+            nn.Dropout(0.1),
             nn.Tanh(),
-            nn.Dropout(0.2),
             nn.Linear(64, num_labels, bias=True),
             nn.Softmax(dim=1),
         )
