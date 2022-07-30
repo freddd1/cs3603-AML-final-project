@@ -24,7 +24,6 @@ class tBERT(nn.Module):
         self.max_length = max_length
 
         self.bert = BertModel.from_pretrained(model_name)
-
         self._bert_finetune_last_layers()  # Only train the final layers of bert. Freeze all the others
 
         self.lda = LatentDirichletAllocation(n_components=n_topics)
@@ -74,10 +73,8 @@ class tBERT(nn.Module):
                               truncation=True, return_tensors='pt')
 
     def _bert_finetune_last_layers(self):
-        # this will make only classifier, last encoding layers to be learned
-        # this is the last layers of the model
+        # this will make only the last encoding layers to be learned
         # set the other layers to be frozen
-        updated_layers = []
         layers_to_learn = ["classifier.", "encoder.layer.11"]
         for name, param in self.bert.named_parameters():
             to_update = [True if layer in name else False for layer in layers_to_learn]
