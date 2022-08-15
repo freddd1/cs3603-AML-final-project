@@ -23,3 +23,76 @@ def create_sentences_corpus(dl: DataLoader) -> List:
     sentences.extend([batch['sentences1'] for batch in dl])
     sentences.extend([batch['sentences2'] for batch in dl])
     return list(itertools.chain(*sentences))
+
+
+def prepre_metadata_to_model(path_to_metadata: str, cutoff: int=2) -> pd.DataFrame:
+    """
+    :param df:
+    :param cutoff: is the cutoff of the overall score. It is the threshold we will use in order to create a binary label
+    :return:
+    """
+    df = pd.read_csv(path_to_metadata)
+    return_df = pd.DataFrame(columns=['labels', 'id1', 'id2'])
+
+    return_df[['id1', 'id2']] = df.pair_id.str.split('_', 1, expand=True)
+    return_df = return_df.astype({'id1': 'int', 'id2': 'int'})
+
+    return_df['labels'] = 0
+    return_df['labels'][df['Overall'] >= cutoff] = 1
+
+    return return_df
+
+
+def prepre_articles_to_model(path_to_data: str, col_text_to_use: str) -> pd.DataFrame:
+    '''
+
+    :param path_to_data:
+    :param col_text_to_use: from the group {'title', 'text'}
+    :return:
+    '''
+
+    df = pd.read_csv(path_to_data)
+    return df[['news_id', col_text_to_use]].rename(columns={'news_id': 'id', col_text_to_use: 'input_text'})
+
+
+def _filter_metadata_rows(data: pd.DataFrame, metadata: pd.DataFrame) -> pd.DataFrame:
+    """
+    Filter only rows that we have their data in self.data
+    :return: filter metadata file
+    """
+    idx = []
+    ids_to_check = data.id.tolist()
+    for i, (id1, id2) in enumerate(zip(metadata.id1.tolist(), metadata.id2.tolist())):
+        if id1 in ids_to_check and id2 in ids_to_check:
+            idx.append(i)
+    return metadata.loc[idx, :]
+
+
+def _merge_data_metadata(data, metadata):
+    m = metadata.merge(data, left_on='id1', right_on='id', how='left').rename(columns={'input_text': 'text1'})
+    m = m.merge(data, left_on='id2', right_on='id', how='left').rename(columns={'input_text': 'text2'})
+    m = m.drop(columns=[col for col in m.columns if col.startswith('id')])
+    return m
+
+
+def prepre_data_to_model(path_to_metadata: str,
+                         path_to_data: str,
+                         cutoff: int = 2,
+                         col_text_to_use: str = 'title'
+                         ):
+    """
+    :param path_to_metadata:
+    :param path_to_data:
+    :param cutoff:
+    :param col_text_to_use: from the group {'title', 'text'}
+    :return:
+    """
+
+    data = prepre_articles_to_model(path_to_data, col_text_to_use)
+    metadata = prepre_metadata_to_model(path_to_metadata, cutoff=cutoff)
+    metadata = _filter_metadata_rows(data, metadata)
+    return _merge_data_metadata(data, metadata)
+
+
+def clean_text(s: str)->str:
+    s = s.lower()
