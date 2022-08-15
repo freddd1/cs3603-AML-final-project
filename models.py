@@ -11,7 +11,9 @@ class tBERT(nn.Module):
                  model_name: str = 'bert-base-uncased',
                  num_labels: int = 2,
                  n_topics: int = 40,
+                 alpha: float = None,
                  max_length=64,
+
                  device='cpu'
                  ):
         super(tBERT, self).__init__()
@@ -26,7 +28,7 @@ class tBERT(nn.Module):
         self.bert = BertModel.from_pretrained(model_name)
         self._bert_finetune_last_layers()  # Only train the final layers of bert. Freeze all the others
 
-        self.lda = LatentDirichletAllocation(n_components=n_topics)
+        self.lda = LatentDirichletAllocation(n_components=n_topics, doc_topic_prior=alpha)
         embedded_corpus = self.tokenize(corpus)['input_ids']
         assert len(corpus) == embedded_corpus.shape[0], 'error with the embedded_sentences'
         self.lda.fit(embedded_corpus)
@@ -69,7 +71,8 @@ class tBERT(nn.Module):
                               return_tensors='pt')
 
     def tokenize_pair(self, sentence1: List[str], sentence2: List[str]):
-        return self.tokenizer(sentence1, sentence2, padding='max_length', max_length=self.max_length * 2,
+        l = 512 if self.max_length * 2 > 512 else 512
+        return self.tokenizer(sentence1, sentence2, padding='max_length', max_length=l,
                               truncation=True, return_tensors='pt')
 
     def _bert_finetune_last_layers(self):
