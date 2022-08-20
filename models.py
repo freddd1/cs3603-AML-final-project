@@ -78,7 +78,7 @@ class tBERT(nn.Module):
     def _bert_finetune_last_layers(self):
         # this will make only the last encoding layers to be learned
         # set the other layers to be frozen
-        layers_to_learn = ["classifier.", "encoder.layer.11",  "encoder.layer.10"]
+        layers_to_learn = ["classifier.", "encoder.layer.11"]
         for name, param in self.bert.named_parameters():
             to_update = [True if layer in name else False for layer in layers_to_learn]
             if any(to_update):
