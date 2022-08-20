@@ -3,6 +3,8 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 import itertools
+from nltk.corpus import stopwords
+from cleantext import clean
 
 
 def load_msrp_txt(file_name: str):
@@ -75,6 +77,18 @@ def _merge_data_metadata(data, metadata):
     return m
 
 
+def clean_text(s):
+    # if not isinstance(s, str):
+    #     print(s)
+    # 1489983888
+    if s and isinstance(s, str):
+        s = s.lower()
+        s = clean(text=s)
+        s = " ".join([word for word in s.split(' ') if word not in stopwords.words('english')])
+        return s
+    return ''
+
+
 def prepre_data_to_model(path_to_metadata: str,
                          path_to_data: str,
                          cutoff: int = 2,
@@ -91,8 +105,7 @@ def prepre_data_to_model(path_to_metadata: str,
     data = prepre_articles_to_model(path_to_data, col_text_to_use)
     metadata = prepre_metadata_to_model(path_to_metadata, cutoff=cutoff)
     metadata = _filter_metadata_rows(data, metadata)
-    return _merge_data_metadata(data, metadata)
-
-
-def clean_text(s: str)->str:
-    s = s.lower()
+    combined_df = _merge_data_metadata(data, metadata)
+    for col in ['text1', 'text2']:
+        combined_df.loc[:, col] = combined_df[col].apply(clean_text)
+    return combined_df
