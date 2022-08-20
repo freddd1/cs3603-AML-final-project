@@ -87,4 +87,4 @@ class Trainer:
             self.eval_losses.append(loss.item())
             self.progress_bar.update(1)
 
-        return f1_score(all_labels, all_preds)
+        return [int(l) for l in all_labels], [int(p) for p in all_preds]
