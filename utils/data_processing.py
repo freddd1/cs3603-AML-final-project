@@ -91,7 +91,7 @@ def clean_text(s):
 
 def prepre_data_to_model(path_to_metadata: str,
                          path_to_data: str,
-                         cutoff: int = 2,
+                         cutoff: float = 2,
                          col_text_to_use: str = 'title'
                          ):
     """
