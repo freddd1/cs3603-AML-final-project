@@ -6,8 +6,9 @@ There are 2 notebooks to run.
 
 
 ## How to run:
-- Clone the repo locally, create conda environment using the `environment.yml` and run the project.
-- Run this colab notebook (run only semeval8): https://colab.research.google.com/drive/1SM6EnIYHlfkiVfwk8MCw9RzZF8anldPz?usp=sharing
+You have 2 options:
+1. Clone the repo locally, create conda environment using the `environment.yml` and run the project.
+2. Run this colab notebook (run only semeval8): https://colab.research.google.com/drive/1SM6EnIYHlfkiVfwk8MCw9RzZF8anldPz?usp=sharing
 
 
 ## Environment
