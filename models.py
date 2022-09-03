@@ -13,7 +13,6 @@ class tBERT(nn.Module):
                  n_topics: int = 40,
                  alpha: float = None,
                  max_length=64,
-
                  device='cpu'
                  ):
         super(tBERT, self).__init__()
